@@ -1,5 +1,9 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Movie } from '../Movie';
+import { MovieService } from '../movie.service';
+import { ActivatedRoute, Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-movie-detail',
@@ -8,13 +12,21 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   styleUrl: './movie-detail.component.css',
 })
 export class MovieDetailComponent implements OnInit, OnChanges {
-  @Input() movie: any;
+  
   safeTrailerUrl: SafeResourceUrl | null = null;
+  movie!:Movie;
+  movieId!:string;
 
-  constructor(private sanitizer: DomSanitizer) { }
+  constructor(private movieService:MovieService,
+    private route:ActivatedRoute,
+    private router:Router,
+    private sanitizer: DomSanitizer
+  ) { }
 
   ngOnInit(): void {
     this.updateTrailerUrl();
+    this.movieId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.getMovie
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -34,5 +46,19 @@ export class MovieDetailComponent implements OnInit, OnChanges {
     } else {
       this.safeTrailerUrl = null;
     }
+  }
+
+
+  getMovie(){
+    if(!this.movieId) return;
+
+    this.movieService.getMovie(this.movieId).subscribe((apiData) => {
+      this.movie = apiData;
+    });
+  }
+
+  goBack(): void {
+    // Navega de regreso al listado principal.
+    this.router.navigate(['/movie']);
   }
 }
